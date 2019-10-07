@@ -162,6 +162,8 @@ class Options(object):
     parser.add_argument('--os', type=str, nargs=1, help='The target OS')
     parser.add_argument('--cpu', type=str, nargs=1, help='The target CPU '
                                                          'architecture')
+    parser.add_argument('--device', type=str, nargs=1, help='The target Android'
+                                                            ' device.')
     parser.add_argument('-p', '--profile', action='store_true',
                         help="Profile the executable")
     parser.add_argument('-j', '--jobs',
@@ -255,6 +257,8 @@ GN files."""
     if self.buildopts.target_os == 'android':
       # hard-code Android to false until crbug.com/996285 is fixed.
       self.buildopts.is_component_build = False
+    if namespace.device:
+      self.target_android_device = namespace.device[0]
     if namespace.cpu:
       self.buildopts.target_cpu = namespace.cpu[0]
       valid_cpus = ('x86', 'x64', 'arm', 'arm64', 'mipsel', 'mips64el')
@@ -326,7 +330,8 @@ GN files."""
     self.gtest = Options.fixup_google_test_filter_args(namespace.gtest)
     self.active_targets = namespace.target
     if self.buildopts.target_os == 'android':
-      self.target_android_device = self.__get_default_device()
+      if not self.target_android_device:
+        self.target_android_device = self.__get_default_device()
       if not self.buildopts.target_cpu:
         if len(self.env.android_devices) == 0:
           raise Exception('Must specify target cpu if no device attached.')
