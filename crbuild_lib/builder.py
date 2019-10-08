@@ -152,7 +152,6 @@ class Builder(object):
         filter(lambda name: not self.__is_run_only(name), target_names))
     if not target_names_to_build:
       return []
-    print('Building %s...' % target_names_to_build)
     cmd.extend(target_names_to_build)
     Cmd.print_ok(cmd, env_vars=None, add_quotes=True)
     try:
