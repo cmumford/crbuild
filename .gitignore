@@ -1,3 +1,4 @@
 *.pyc
 api_keys.txt
 github-auth.txt
+config.yml
