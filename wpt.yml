@@ -1,0 +1,8 @@
+chromium:
+  ua_name: Clank
+  product: chrome_android
+  package: org.chromium.chrome
+
+webview:
+  ua_name: WebView
+  product: android_webview

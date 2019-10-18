@@ -82,13 +82,13 @@ class TestLoader(unittest.TestCase):
     config.add_target(child_target)
     config.add_target(parent_target)
 
-    targets = config.get_build_targets('parent-name', self.__create_options())
+    targets = config.get_build_targets(['parent-name'], self.__create_options())
     self.assertSetEqual(targets, set(('child-name',)),
                         'Unexpected target sets')
 
   def test_get_targets_references_self(self):
     config = TestLoader.__read_config()
-    build_targets = config.get_build_targets('content_browsertests_apk',
+    build_targets = config.get_build_targets(['content_browsertests_apk'],
                                              self.__create_options())
     expected_targets = set((
         'content_browsertests_apk',
@@ -100,7 +100,7 @@ class TestLoader(unittest.TestCase):
   def test_get_targets_from_template(self):
     config = TestLoader.__read_config()
     opts = self.__create_options()
-    build_targets = config.get_build_targets('base_unittests', opts)
+    build_targets = config.get_build_targets(['base_unittests'], opts)
     expected_targets = set((
         'base_unittests',
         'xdisplaycheck',
@@ -110,7 +110,7 @@ class TestLoader(unittest.TestCase):
 
     # Windows should not have xdisplaycheck as it is Linux-only.
     opts.buildopts.target_os = 'win'
-    build_targets = config.get_build_targets('base_unittests', opts)
+    build_targets = config.get_build_targets(['base_unittests'], opts)
     expected_targets = set((
         'base_unittests',
     ))
@@ -120,7 +120,7 @@ class TestLoader(unittest.TestCase):
   def test_get_targets_several_levels(self):
     config = TestLoader.__read_config()
     opts = self.__create_options()
-    build_targets = config.get_build_targets('tests-all', opts)
+    build_targets = config.get_build_targets(['tests-all'], opts)
     expected_targets = set((
       'base_unittests',
       'blink_platform_unittests',

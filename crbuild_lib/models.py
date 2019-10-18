@@ -206,15 +206,17 @@ class Configuration(object):
       raise DataError('Target name "%s" already exists.' % target.name)
     self.targets[target.name] = target
 
-  def get_build_targets(self, target_name, options):
+  def get_build_targets(self, target_names, options):
     '''Given a Target.name return an array of GN build targets.
 
     Will also return all dependent (upstream) targets.
     '''
-    for _, target in self.targets.items():
-      if target_name == target.name:
-        return target.get_build_targets(options)
-    return set()
+    build_targets = set()
+    for target_name in target_names:
+      for _, target in self.targets.items():
+        if target_name == target.name:
+          build_targets = build_targets.union(target.get_build_targets(options))
+    return build_targets
 
   def get_target(self, target_name):
     if target_name not in self.targets:

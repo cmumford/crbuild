@@ -225,9 +225,9 @@ class Builder(object):
       self.__gn.gen(self.options)
 
     exceptions = []
-    # TODO: Support multiple build targets and none (default) target.
+    # TODO: Support default (none) target.
     build_targets = self.config.get_build_targets(
-        self.options.active_targets[0], self.options)
+        self.options.active_targets, self.options)
     if build_targets:
       exceptions.extend(self.__build(build_targets))
       if exceptions:
