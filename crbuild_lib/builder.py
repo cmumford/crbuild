@@ -8,7 +8,7 @@ import sys
 from .command import Cmd
 from .env import Env
 from .gn import GN
-from .models import Configuration
+from .models import (Configuration, NotFound)
 from .options import Options
 from .stream_reader import StreamReader
 from .variable_expander import VariableExpander
@@ -126,8 +126,11 @@ class Builder(object):
     self.__delete_dir(self.__build_dir())
 
   def __is_run_only(self, target_name):
-    target = self.config.get_target(target_name)
-    return target.run_only
+    try:
+      target = self.config.get_target(target_name)
+      return target.run_only
+    except NotFound as e:
+      return False
 
   def __build(self, target_names):
     '''Build the specified GN target names.'''
@@ -228,23 +231,27 @@ class Builder(object):
     # TODO: Support default (none) target.
     build_targets = self.config.get_build_targets(
         self.options.active_targets, self.options)
-    if build_targets:
-      exceptions.extend(self.__build(build_targets))
-      if exceptions:
-        return exceptions
+    if not build_targets:
+      build_targets = self.options.active_targets
+    exceptions.extend(self.__build(build_targets))
+    if exceptions:
+      return exceptions
 
     if not self.options.run_targets:
       return exceptions
 
     # Now run all executables
     for target_name in self.options.active_targets:
-      for run_command in self.config.get_run_commands(target_name, self.options):
-        e = self.__run(run_command)
-        exceptions.extend(e)
-        if e:
-          # Stop on first error.
-          break
-      if self.options.profile:
-        # TODO: Re-add support for profiling message.
-        pass
+      try:
+        for run_command in self.config.get_run_commands(target_name, self.options):
+          e = self.__run(run_command)
+          exceptions.extend(e)
+          if e:
+            # Stop on first error.
+            break
+        if self.options.profile:
+          # TODO: Re-add support for profiling message.
+          pass
+      except NotFound as e:
+        print('Nothing to run for %s' % target_name)
     return exceptions
