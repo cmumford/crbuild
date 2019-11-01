@@ -17,6 +17,12 @@ class InvalidOption(Exception):
   pass
 
 class Options(object):
+
+  valid_arm_cpus = ('arm', 'arm64', 'armeabi', 'armeabi-v7a', 'armv8-a')
+  valid_x86_cpus = ('x86', 'x64')
+  valid_mips_cpus = ('mipsel', 'mips64el')
+  valid_cpus = valid_arm_cpus + valid_x86_cpus + valid_mips_cpus
+
   def __init__(self, env, config):
     self.gclient = GClient(env.gclient_path)
     self.__config = config
@@ -261,11 +267,10 @@ GN files."""
       self.target_android_device = namespace.device[0]
     if namespace.cpu:
       self.buildopts.target_cpu = namespace.cpu[0]
-      valid_cpus = ('x86', 'x64', 'arm', 'arm64', 'mipsel', 'mips64el')
-      if not self.buildopts.target_cpu in valid_cpus:
+      if not self.buildopts.target_cpu in Options.valid_cpus:
         raise InvalidOption(
             str.format('"{0}" is not a valid CPU. Must be one of {1}',
-                       self.buildopts.target_cpu, valid_cpus))
+                       self.buildopts.target_cpu, Options.valid_cpus))
     if self.buildopts.target_os == 'linux':
       self.buildopts.gyp_defines.add('linux_use_debug_fission=0')
     if ((self.buildopts.target_os == 'win' or
@@ -359,9 +364,11 @@ GN files."""
     if len(device_info) == 1:
       return list(device_info.keys())[0]
     for device_name, _ in device_info.items():
-      if self.buildopts.target_cpu in ('arm', 'arm64') and not device_name.startswith('emulator-'):
+      if self.buildopts.target_cpu in Options.valid_arm_cpus \
+          and not device_name.startswith('emulator-'):
         return device_name
-      elif self.buildopts.target_cpu in ('x86', 'x64') and device_name.startswith('emulator-'):
+      elif self.buildopts.target_cpu in Options.valid_x86_cpus \
+          and device_name.startswith('emulator-'):
         return device_name
     return None
 
