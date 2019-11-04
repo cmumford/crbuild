@@ -25,7 +25,7 @@ class Options(object):
 
   def __init__(self, env, config):
     self.gclient = GClient(env.gclient_path)
-    self.__config = config
+    self._config = config
     self.env = env
     self.buildopts = BuildSettings(git.CurrentBranch(),
                                    self.gclient.default_target_os)
@@ -64,7 +64,7 @@ class Options(object):
   # argparse can't deal with multiple positional arguments. So before we parse
   # args we strip off the "bare double dash" args which we pass to an executable
   # *if* we wind up running one.
-  def __strip_run_positional_args(self, args):
+  def _strip_run_positional_args(self, args):
     if '--' in args:
       positional_start_idx = args.index('--')
       self.run_args = args[positional_start_idx+1:]
@@ -96,9 +96,9 @@ class Options(object):
       ret = ret + ':'
     return ret
 
-  def __get_target_help_epilog(self):
+  def _get_target_help_epilog(self):
     target_info = []
-    for _, target in self.__config.targets.items():
+    for _, target in self._config.targets.items():
       target_info.append((target.name, target.title))
     epilog = ''
     for info in sorted(target_info, key=lambda info: info[0]):
@@ -112,7 +112,7 @@ class Options(object):
     desc = 'A script to make building and running Chromium targets easier.'
     parser = argparse.ArgumentParser(description=desc,
                                      formatter_class=argparse.RawTextHelpFormatter,
-                                     epilog=self.__get_target_help_epilog())
+                                     epilog=self._get_target_help_epilog())
     parser.add_argument('-d', '--debug', action='store_true',
                         help='Do a debug build (default: debug)')
     parser.add_argument('-r', '--release', action='store_true',
@@ -200,7 +200,7 @@ GN files."""
 
   def parse(self, args):
     parser = self.create_parser()
-    namespace = parser.parse_args(self.__strip_run_positional_args(args))
+    namespace = parser.parse_args(self._strip_run_positional_args(args))
 
     if namespace.debug and namespace.release:
       raise InvalidOption('Can only do debug OR release, not both.')
@@ -336,7 +336,7 @@ GN files."""
     self.active_targets = namespace.target
     if self.buildopts.target_os == 'android':
       if not self.target_android_device:
-        self.target_android_device = self.__get_default_device()
+        self.target_android_device = self._get_default_device()
       if not self.buildopts.target_cpu:
         if len(self.env.android_devices) == 0:
           raise Exception('Must specify target cpu if no device attached.')
@@ -357,9 +357,9 @@ GN files."""
       # system_webview_package_name only works on N+.
       # Also, this may change args.gn every build, but that's OK.
       self.buildopts.system_webview_package_name = \
-          self.__get_system_webview_package_name(self.target_android_device)
+          self._get_system_webview_package_name(self.target_android_device)
 
-  def __get_default_device(self):
+  def _get_default_device(self):
     device_info = self.env.android_devices
     if len(device_info) == 1:
       return list(device_info.keys())[0]
@@ -372,7 +372,7 @@ GN files."""
         return device_name
     return None
 
-  def __get_allowed_android_packages(self, device):
+  def _get_allowed_android_packages(self, device):
     # https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/build-instructions.md#changing-package-name
     device_info = self.env.android_devices[device]
     code_letter = device_info.release_letter()
@@ -401,7 +401,7 @@ GN files."""
       return ['com.android.webview']
     raise Exception('Unsupported platform: %s' % code_letter)
 
-  def __get_system_webview_package_name(self, device):
+  def _get_system_webview_package_name(self, device):
     # See https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/quick-start.md#my-package-isn_t-in-the-list
     # See https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/quick-start.md#setting-up-the-build
     assert self.buildopts.target_os == 'android'
@@ -420,16 +420,16 @@ GN files."""
     }
 
     desired_package_name = 'com.chrome.canary'
-    allowed_package_names = self.__get_allowed_android_packages(device)
+    allowed_package_names = self._get_allowed_android_packages(device)
     if desired_package_name in allowed_package_names:
       return desired_package_name
     return allowed_package_names[int(len(allowed_package_names) / 2)]
 
-  def __is_goma_running(self):
+  def _is_goma_running(self):
     if not os.path.exists(self.buildopts.goma_dir):
       print("Can't find goma at %s" % self.buildopts.goma_dir)
       return False
     return True
 
   def can_use_goma(self):
-    return self.__is_goma_running()
+    return self._is_goma_running()

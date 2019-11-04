@@ -16,14 +16,14 @@ class Cmd(object):
 
 
   @staticmethod
-  def __item_to_string(item, add_quotes, quote_flags):
+  def _item_to_string(item, add_quotes, quote_flags):
     assert(isinstance(item, str))
     vals = item.split('=')
     if len(vals) > 2:
       raise Exception('Too many equals: ' + item)
     if len(vals) == 2:
-      return '%s=%s' % (Cmd.__item_to_string(vals[0], add_quotes, False),
-                        Cmd.__item_to_string(vals[1], add_quotes, True))
+      return '%s=%s' % (Cmd._item_to_string(vals[0], add_quotes, False),
+                        Cmd._item_to_string(vals[1], add_quotes, True))
     if not add_quotes:
       return item
     if ' ' in item or '*' in item or (quote_flags and '--' in item):
@@ -33,11 +33,11 @@ class Cmd(object):
   @staticmethod
   def list_to_string(cmd, add_quotes):
     assert(isinstance(cmd, list))
-    return ' '.join([Cmd.__item_to_string(i, add_quotes=add_quotes,
+    return ' '.join([Cmd._item_to_string(i, add_quotes=add_quotes,
                                           quote_flags=False) for i in cmd])
 
   @staticmethod
-  def __print(cmd, env_vars, color, add_quotes):
+  def _print(cmd, env_vars, color, add_quotes):
     '''Print the command to stdout in the specified color (if able to).
 
     May supply a string of list of strings.'''
@@ -48,7 +48,7 @@ class Cmd(object):
       str_cmd = cmd
     if env_vars:
       str_cmd = env_vars + ' ' + str_cmd
-    if Cmd.__can_output_color():
+    if Cmd._can_output_color():
       print("%s%s%s" % (color, str_cmd, bcolors.ENDC))
     else:
       print(str_cmd)
@@ -58,7 +58,7 @@ class Cmd(object):
     '''Print the OK command to stdout.
 
     May supply a string of list of strings.'''
-    Cmd.__print(cmd, env_vars, bcolors.OKBLUE, add_quotes)
+    Cmd._print(cmd, env_vars, bcolors.OKBLUE, add_quotes)
 
   @staticmethod
   def print_error(cmd, env_vars, add_quotes):
@@ -72,10 +72,10 @@ class Cmd(object):
       cmd = ['Failed: '] + cmd
     else:
       cmd = 'Failed: ' + cmd
-    Cmd.__print(cmd, env_vars, bcolors.FAIL, add_quotes)
+    Cmd._print(cmd, env_vars, bcolors.FAIL, add_quotes)
 
   @staticmethod
-  def __can_output_color():
+  def _can_output_color():
     if platform.system() == 'Windows':
       return False
     else:

@@ -8,7 +8,7 @@ from . import build_settings
 class ClassJSONEncoder(json.JSONEncoder):
   def default(self, obj):
     if isinstance(obj, BuildSettings):
-      return __remove_nulls(obj.__dict__)
+      return _remove_nulls(obj.__dict__)
     return super(ClassJSONEncoder, self).default(obj)
 
 class BuildSettings(object):
@@ -46,15 +46,15 @@ class BuildSettings(object):
     self.use_rtti = False
     self.v8_enable_verify_heap = False
     self.valgrind = False
-    self.__set_target_os(target_os)
+    self._set_target_os(target_os)
 
   @property
   def target_os(self):
-    return self.__target_os
+    return self._target_os
 
-  def __set_target_os(self, target_os):
-    self.__target_os = target_os
-    if self.__target_os == 'android':
+  def _set_target_os(self, target_os):
+    self._target_os = target_os
+    if self._target_os == 'android':
       # https://sites.google.com/a/google.com/clank/engineering/sdk-build/working-with-monochrome
       self.android_sdk_release = 'p'
       self.use_signing_keys = True
@@ -67,7 +67,7 @@ class BuildSettings(object):
 
   @target_os.setter
   def target_os(self, target_os):
-    self.__set_target_os(target_os)
+    self._set_target_os(target_os)
 
   def write(self, f):
     '''Serialize this object to the given file.
@@ -159,4 +159,4 @@ class BuildSettings(object):
     return not self.__ne__(other)
 
   def __repr__(self):
-    return json.dumps(__remove_nulls(self.__dict__), cls=ClassJSONEncoder)
+    return json.dumps(_remove_nulls(self.__dict__), cls=ClassJSONEncoder)

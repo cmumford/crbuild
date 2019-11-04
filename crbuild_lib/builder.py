@@ -18,8 +18,8 @@ class Builder(object):
     self.options = options
     self.config = config
     self.variable_expander = VariableExpander(options)
-    self.__gn = GN(options.env, self.variable_expander)
-    self.__set_env_vars()
+    self._gn = GN(options.env, self.variable_expander)
+    self._set_env_vars()
 
   # Linking on Windows can sometimes fail with this error:
   #
@@ -28,7 +28,7 @@ class Builder(object):
   # This is caused by the Microsoft PDB Server running out of virtual address
   # space. As the PDB server will be automatically started when necessary
   # Killing this service fixes this problem.
-  def __kill_pdb_server(self):
+  def _kill_pdb_server(self):
     assert self.options.buildopts.target_os == 'win'
     cmd = "taskkill /F /im mspdbsrv.exe"
     if self.options.print_cmds:
@@ -37,7 +37,7 @@ class Builder(object):
       os.system(cmd)
 
   @staticmethod
-  def __prepend_to_path(path):
+  def _prepend_to_path(path):
     os.environ['PATH'] = "%s%s%s" % (path, os.pathsep, os.environ['PATH'])
 
   @staticmethod
@@ -45,7 +45,7 @@ class Builder(object):
     for key in sorted(os.environ):
       print("%s=%s" % (key, os.environ[key]))
 
-  def __set_env_vars(self):
+  def _set_env_vars(self):
     # Copy so as to not modify options
     gyp_defines = copy.copy(self.options.buildopts.gyp_defines)
     os.environ['GYP_GENERATORS'] = self.options.buildopts.gyp_generators
@@ -54,13 +54,13 @@ class Builder(object):
       os.environ['CXX'] = 'clang++'
       os.environ['builddir_name'] = 'llvm'
       assert os.path.exists(self.options.llvm_path)
-      Builder.__prepend_to_path(self.options.llvm_path)
+      Builder._prepend_to_path(self.options.llvm_path)
       gyp_defines.add('clang=1')
     if self.options.buildopts.valgrind:
       gyp_defines.add('build_for_tool=memcheck')
     # Must be prepended to PATH last
     if self.options.buildopts.use_goma:
-      Builder.__prepend_to_path(self.options.buildopts.goma_dir)
+      Builder._prepend_to_path(self.options.buildopts.goma_dir)
     if 'GYP_DEFINES' in os.environ:
       for prev_val in os.environ['GYP_DEFINES'].split():
         gyp_defines.add(prev_val)
@@ -87,7 +87,7 @@ class Builder(object):
       os.environ['CPUPROFILE'] = self.options.profile_file
 
   # https://code.google.com/p/syzygy/wiki/SyzyASanBug
-  def __instrument_SyzyASan(self, build_dir):
+  def _instrument_SyzyASan(self, build_dir):
     syzygy_exes = os.path.join('third_party', 'syzygy', 'binaries', 'exe')
     instrument_exe = os.path.join(syzygy_exes, 'instrument.exe')
     input_chrome_dll = os.path.join(build_dir, 'chrome.dll')
@@ -112,7 +112,7 @@ class Builder(object):
       shutil.copyfile(os.path.join(syzygy_exes, 'syzyasan_rtl.dll'),
                       os.path.join(build_dir, 'syzyasan_rtl.dll'))
 
-  def __delete_dir(self, dir_path):
+  def _delete_dir(self, dir_path):
     if os.path.exists(dir_path):
       if self.options.print_cmds:
         Cmd.print_ok("Deleting %s" % dir_path, env_vars=None, add_quotes=True)
@@ -123,18 +123,18 @@ class Builder(object):
     print('Deleting intermediate files...')
     if os.path.exists(self.options.gyp_state_path):
       os.remove(self.options.gyp_state_path)
-    self.__delete_dir(self.__build_dir())
+    self._delete_dir(self._build_dir())
 
-  def __is_run_only(self, target_name):
+  def _is_run_only(self, target_name):
     try:
       target = self.config.get_target(target_name)
       return target.run_only
     except NotFound as e:
       return False
 
-  def __build(self, target_names):
+  def _build(self, target_names):
     '''Build the specified GN target names.'''
-    build_dir = self.__build_dir()
+    build_dir = self._build_dir()
     cmd = ['ninja', '-C', build_dir, '-l', '40']
     if self.options.noop:
       cmd.insert(1, '-n')
@@ -148,11 +148,11 @@ class Builder(object):
     if self.options.keep_going:
       cmd[1:1] = ['-k', '50000']
     if self.options.buildopts.is_asan:
-      platform_dir = self.__build_dir()
+      platform_dir = self._build_dir()
       os.environ['CHROME_DEVEL_SANDBOX'] = os.path.join(platform_dir,
                                                         'chrome_sandbox')
     target_names_to_build = list(
-        filter(lambda name: not self.__is_run_only(name), target_names))
+        filter(lambda name: not self._is_run_only(name), target_names))
     if not target_names_to_build:
       return []
     cmd.extend(target_names_to_build)
@@ -161,12 +161,12 @@ class Builder(object):
       subprocess.check_call(cmd)
       if (self.options.buildopts.is_asan and
           self.options.buildopts.target_os == 'win'):
-        self.__instrument_SyzyASan(build_dir)
+        self._instrument_SyzyASan(build_dir)
       return []
     except subprocess.CalledProcessError as e:
       return [e]
 
-  def __run(self, run_command):
+  def _run(self, run_command):
     try:
       cmd = self.variable_expander.expand_variables(run_command.cmd_line())
       if self.options.print_cmds:
@@ -200,13 +200,13 @@ class Builder(object):
     except subprocess.CalledProcessError as e:
       return [e]
 
-  def __build_dir(self):
+  def _build_dir(self):
     return self.variable_expander.get_build_dir()
 
-  def __need_to_re_gn(self):
+  def _need_to_re_gn(self):
     try:
-      existing_args = self.__gn.get_args()
-      preferred_args = self.__gn.build_args(self.options)
+      existing_args = self._gn.get_args()
+      preferred_args = self._gn.build_args(self.options)
       return existing_args != preferred_args
     except IOError:
       # File not found (likely).
@@ -214,18 +214,18 @@ class Builder(object):
 
   def build(self):
     if self.options.buildopts.target_os == 'win':
-      self.__kill_pdb_server()
+      self._kill_pdb_server()
 
     if self.options.clobber:
       self.clobber()
 
-    if self.__need_to_re_gn():
-      build_dir = self.__build_dir()
+    if self._need_to_re_gn():
+      build_dir = self._build_dir()
       if not os.path.isdir(build_dir):
         # This creates the directory.
-        self.__gn.gen(self.options)
-      self.__gn.put_args(self.__gn.build_args(self.options))
-      self.__gn.gen(self.options)
+        self._gn.gen(self.options)
+      self._gn.put_args(self._gn.build_args(self.options))
+      self._gn.gen(self.options)
 
     exceptions = []
     # TODO: Support default (none) target.
@@ -233,7 +233,7 @@ class Builder(object):
         self.options.active_targets, self.options)
     if not build_targets:
       build_targets = self.options.active_targets
-    exceptions.extend(self.__build(build_targets))
+    exceptions.extend(self._build(build_targets))
     if exceptions:
       return exceptions
 
@@ -244,7 +244,7 @@ class Builder(object):
     for target_name in self.options.active_targets:
       try:
         for run_command in self.config.get_run_commands(target_name, self.options):
-          e = self.__run(run_command)
+          e = self._run(run_command)
           exceptions.extend(e)
           if e:
             # Stop on first error.

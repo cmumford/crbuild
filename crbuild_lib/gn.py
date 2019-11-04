@@ -11,14 +11,14 @@ class GN(object):
   '''This module is for interacting with GN.'''
 
   def __init__(self, environ, varexp):
-    self.__env = environ
-    self.__variable_expander = varexp
+    self._env = environ
+    self._variable_expander = varexp
 
   def args_path(self):
-    return os.path.join(self.__variable_expander.get_build_dir(), 'args.gn')
+    return os.path.join(self._variable_expander.get_build_dir(), 'args.gn')
 
   @staticmethod
-  def __read_file(f):
+  def _read_file(f):
     '''Read all the arguments from an open file returning a dictionary
     containing the file contents.'''
     args = {}
@@ -38,7 +38,7 @@ class GN(object):
     if |all_args| is true then will also return all default GN settings.'''
     if all_args:
       args = {}
-      cmd = ['gn', 'args', self.__variable_expander.get_build_dir(),
+      cmd = ['gn', 'args', self._variable_expander.get_build_dir(),
              '--list', '--short']
       for line in subprocess.check_output(cmd).splitlines():
         vals = line.strip().split(b'=')
@@ -46,7 +46,7 @@ class GN(object):
           args[vals[0].strip()] = vals[1].strip()
       return args
     with open(self.args_path(), 'r') as f:
-      return GN.__read_file(f)
+      return GN._read_file(f)
 
   def build_args(self, options):
     '''Given a BuildSettings instance populate a dictionary containing all
@@ -74,7 +74,7 @@ class GN(object):
     args['use_goma'] = str(build_settings.use_goma).lower()
     if build_settings.use_libfuzzer:
       args['use_libfuzzer'] = str(build_settings.use_libfuzzer).lower()
-    if self.__env.build_platform == 'win':
+    if self._env.build_platform == 'win':
       args['is_win_fastlink'] = str(build_settings.use_goma).lower()
       args['symbol_level'] = '2' if build_settings.is_official_build else '1'
     if build_settings.enable_profiling:
@@ -99,10 +99,10 @@ class GN(object):
     # all platforms (5/4/2019).
     args['enable_nacl'] = 'false'
     if build_settings.target_os == 'chromeos' and \
-        self.__env.api_keys_path and \
-        os.path.exists(self.__env.api_keys_path):
-      with open(self.__env.api_keys_path) as f:
-        supplimental_args = GN.__read_file(f)
+        self._env.api_keys_path and \
+        os.path.exists(self._env.api_keys_path):
+      with open(self._env.api_keys_path) as f:
+        supplimental_args = GN._read_file(f)
       for k in supplimental_args:
         args[k] = supplimental_args[k]
     if build_settings.is_cfi and not build_settings.is_official_build:
@@ -146,11 +146,11 @@ class GN(object):
         print("%s = %s" % (arg, args[arg]), file=f)
 
   def gen(self, options):
-    cmd = ['gn', 'gen', self.__variable_expander.get_build_dir()]
+    cmd = ['gn', 'gen', self._variable_expander.get_build_dir()]
     if options.print_cmds:
       Cmd.print_ok(cmd, env_vars=None, add_quotes=True)
     if options.noop:
       return
     # If build_dir doesn't exist then Windows fails with default shell=False
-    shell = self.__env.build_platform == 'win'
+    shell = self._env.build_platform == 'win'
     subprocess.check_call(cmd, shell=shell)

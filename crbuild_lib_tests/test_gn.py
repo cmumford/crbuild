@@ -18,7 +18,7 @@ from crbuild_lib.variable_expander import VariableExpander
 
 class TestGN(unittest.TestCase):
 
-  def __create_options(self):
+  def _create_options(self):
     return Options(
         Env(os.path.dirname(__file__),
             GetAbsPathRelativeToThisFileDir('gclient.txt'),
@@ -26,13 +26,13 @@ class TestGN(unittest.TestCase):
         Configuration())
 
   def test_cpu_count(self):
-    opts = self.__create_options()
+    opts = self._create_options()
     exp = VariableExpander(opts)
     gn = GN(opts.env, exp)
     gn.get_args()
 
   def test_api_keys(self):
-    opts = self.__create_options()
+    opts = self._create_options()
     # Linux doesn't add the API keys.
     opts.buildopts.target_os = 'linux'
     exp = VariableExpander(opts)

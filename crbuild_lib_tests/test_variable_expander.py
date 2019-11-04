@@ -15,14 +15,14 @@ from crbuild_lib import (env, models, options, variable_expander)
 
 class TestVariableExpander(unittest.TestCase):
 
-  def __create_opts(self, build_platform='linux'):
+  def _create_opts(self, build_platform='linux'):
     environ = env.Env(os.getcwd(),
                       GetAbsPathRelativeToThisFileDir('gclient.txt'))
     environ.build_platform = build_platform
     return options.Options(environ, models.Configuration())
 
   def test_default_options(self):
-    opts = self.__create_opts()
+    opts = self._create_opts()
     exp = variable_expander.VariableExpander(opts)
     self.assertEqual(exp.get_value('out'), 'out')
     self.assertEqual(exp.get_value('Build_type'), 'Debug')
@@ -39,7 +39,7 @@ class TestVariableExpander(unittest.TestCase):
     self.assertEqual(exp.get_value('run_args'), None)
 
   def test_build_dir(self):
-    opts = self.__create_opts()
+    opts = self._create_opts()
     exp = variable_expander.VariableExpander(opts)
 
     # The build platform and target OS are the same so we don't expect
@@ -62,7 +62,7 @@ class TestVariableExpander(unittest.TestCase):
                      'Official-Release-asan-x86')
 
   def test_build_name(self):
-    opts = self.__create_opts()
+    opts = self._create_opts()
     exp = variable_expander.VariableExpander(opts)
 
     # The build platform and target OS are the same so we don't expect
@@ -120,42 +120,42 @@ class TestVariableExpander(unittest.TestCase):
                      'Debug-android-x86')
 
   def test_unknown_variable(self):
-    opts = self.__create_opts()
+    opts = self._create_opts()
     exp = variable_expander.VariableExpander(opts)
     with self.assertRaises(variable_expander.UnknownVariable):
       exp.get_value('<unknown>')
 
   def test_expand_variables(self):
-    opts = self.__create_opts()
+    opts = self._create_opts()
     exp = variable_expander.VariableExpander(opts)
     self.assertEqual(exp.expand_variables('${Build_type}'), 'Debug')
     self.assertEqual(exp.expand_variables('${Build_type}:${build_type}'),
                      'Debug:debug')
 
   def test_xvfb(self):
-    opts = self.__create_opts('linux')
+    opts = self._create_opts('linux')
     exp = variable_expander.VariableExpander(opts)
     self.assertListEqual(exp.get_value('xvfb'), ['python', 'testing/xvfb.py'])
 
-    opts = self.__create_opts('win')
+    opts = self._create_opts('win')
     exp = variable_expander.VariableExpander(opts)
     self.assertEqual(exp.get_value('xvfb'), None)
 
-    opts = self.__create_opts('linux')
+    opts = self._create_opts('linux')
     exp = variable_expander.VariableExpander(opts)
     self.assertListEqual(exp.expand_variables(['${xvfb}']),
                          ['python', 'testing/xvfb.py'])
     self.assertListEqual(exp.expand_variables(['${xvfb}', 'one', 'two']),
                          ['python', 'testing/xvfb.py', 'one', 'two'])
 
-    opts = self.__create_opts('win')
+    opts = self._create_opts('win')
     exp = variable_expander.VariableExpander(opts)
     #self.assertEqual(exp.expand_variables(['${xvfb}']), None)
     self.assertListEqual(exp.expand_variables(['${xvfb}', 'one', 'two']),
                          ['one', 'two'])
 
   def test_run_args(self):
-    opts = self.__create_opts('linux')
+    opts = self._create_opts('linux')
     exp = variable_expander.VariableExpander(opts)
     self.assertListEqual(exp.expand_variables(['${run_args}', 'one', 'two']),
                          ['one', 'two'])

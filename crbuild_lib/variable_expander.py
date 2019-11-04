@@ -12,7 +12,7 @@ class VariableExpander(object):
   def __init__(self, options):
     self.options = options
 
-  def __get_base_build_dir(self):
+  def _get_base_build_dir(self):
     '''Return the relative path to the build dir - e.g. out/Debug.'''
     buildopts = self.options.buildopts
     dir_name = 'Debug' if buildopts.is_debug else 'Release'
@@ -34,7 +34,7 @@ class VariableExpander(object):
 
   def get_build_dir(self):
       '''Return the full path to the build dir - e.g. src/dir/out/Debug.'''
-      return os.path.join(self.options.out_dir, self.__get_base_build_dir())
+      return os.path.join(self.options.out_dir, self._get_base_build_dir())
 
   def get_value(self, variable_name):
     '''Given a variable name return the variable value.
@@ -57,7 +57,7 @@ class VariableExpander(object):
     if variable_name == 'Build_dir':
       return self.get_build_dir()
     if variable_name == 'Build_name':
-      return self.__get_base_build_dir()
+      return self._get_base_build_dir()
     if variable_name == 'root_dir':
       return self.options.env.src_root_dir
     if variable_name == 'android_device':

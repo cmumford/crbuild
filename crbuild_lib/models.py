@@ -116,7 +116,7 @@ class Target(object):
 
     return targets
 
-  def __get_run_commands(self, options):
+  def _get_run_commands(self, options):
     if options.buildopts.is_asan and 'asan' in self.run_commands:
       return self.run_commands['asan']
     if options.profile and 'profile' in self.run_commands:
@@ -153,7 +153,7 @@ class Target(object):
         return run_commands
       try:
         # Add add the supplemental arguments to each run command.
-        supplemental_run_commands = self.__get_run_commands(options)
+        supplemental_run_commands = self._get_run_commands(options)
         assert(len(supplemental_run_commands) == 1)
         # Can add supplemental args, but not a command.
         assert(supplemental_run_commands[0].args)
@@ -172,22 +172,22 @@ class Target(object):
         # No error, just no supplemental args.
         pass
     else:
-      run_commands = self.__get_run_commands(options)
+      run_commands = self._get_run_commands(options)
 
     return run_commands
 
-  def __depends_on_target(self, target):
+  def _depends_on_target(self, target):
     if target is self:
       return True
     if not self.upstream_targets:
       return False
     for target_ref in self.upstream_targets:
-      if target_ref.target.__depends_on_target(target):
+      if target_ref.target._depends_on_target(target):
         return True
     return False
 
   def add_upstream_target(self, target_ref):
-    if self.__depends_on_target(target_ref.target):
+    if self._depends_on_target(target_ref.target):
       raise CustomError(str.format('Target "{0}" already depends on "{1}"',
                                    self.name, target_ref.target.name))
     if self.upstream_targets == None:

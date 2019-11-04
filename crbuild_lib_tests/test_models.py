@@ -15,10 +15,10 @@ from crbuild_lib import (adb, env, loader, models, options, variable_expander)
 class TestLoader(unittest.TestCase):
 
   @staticmethod
-  def __read_config():
+  def _read_config():
     return loader.ConfigReader().read('test_config.yml')
 
-  def __create_options(self, target_os='linux'):
+  def _create_options(self, target_os='linux'):
     environ = env.Env(os.getcwd(),
                       GetAbsPathRelativeToThisFilesDir('gclient.txt'))
     environ.android_devices = {
@@ -31,14 +31,14 @@ class TestLoader(unittest.TestCase):
 
   def test_get_target_meta(self):
     '''Get a "meta" target - a name that exists only in the config file.'''
-    config = TestLoader.__read_config()
+    config = TestLoader._read_config()
     target = config.get_target('tests-all')
     self.assertEqual(target.name, 'tests-all')
 
   def test_get_target_meta_gtest(self):
-    opts = self.__create_options()
+    opts = self._create_options()
     opts.gtest = options.Options.fixup_google_test_filter_args('TestClass.Test')
-    config = TestLoader.__read_config()
+    config = TestLoader._read_config()
 
     actual_cmd = [cmd.cmd_line() for cmd in
                   config.get_run_commands('tests-all', opts)]
@@ -60,13 +60,13 @@ class TestLoader(unittest.TestCase):
     Many of the GN targets have identical attributes (ways to build/run) and
     are defined with a list of GN targets to which they all apply. The loader
     should expand these to one Target for each GN target name.'''
-    config = TestLoader.__read_config()
+    config = TestLoader._read_config()
     target = config.get_target('base_unittests')
     self.assertEqual(target.name, 'base_unittests')
 
   def test_get_target_with_default(self):
     target = models.Target('target-name')
-    targets = target.get_build_targets(self.__create_options())
+    targets = target.get_build_targets(self._create_options())
     self.assertSetEqual(targets, set(('target-name', )))
 
   def test_get_target_with_reference(self):
@@ -82,14 +82,14 @@ class TestLoader(unittest.TestCase):
     config.add_target(child_target)
     config.add_target(parent_target)
 
-    targets = config.get_build_targets(['parent-name'], self.__create_options())
+    targets = config.get_build_targets(['parent-name'], self._create_options())
     self.assertSetEqual(targets, set(('child-name',)),
                         'Unexpected target sets')
 
   def test_get_targets_references_self(self):
-    config = TestLoader.__read_config()
+    config = TestLoader._read_config()
     build_targets = config.get_build_targets(['content_browsertests_apk'],
-                                             self.__create_options())
+                                             self._create_options())
     expected_targets = set((
         'content_browsertests_apk',
         'forwarder2',
@@ -98,8 +98,8 @@ class TestLoader(unittest.TestCase):
                         'Unexpected build targets')
 
   def test_get_targets_from_template(self):
-    config = TestLoader.__read_config()
-    opts = self.__create_options()
+    config = TestLoader._read_config()
+    opts = self._create_options()
     build_targets = config.get_build_targets(['base_unittests'], opts)
     expected_targets = set((
         'base_unittests',
@@ -118,8 +118,8 @@ class TestLoader(unittest.TestCase):
                         'Unexpected build targets')
 
   def test_get_targets_several_levels(self):
-    config = TestLoader.__read_config()
-    opts = self.__create_options()
+    config = TestLoader._read_config()
+    opts = self._create_options()
     build_targets = config.get_build_targets(['tests-all'], opts)
     expected_targets = set((
       'base_unittests',
@@ -130,15 +130,15 @@ class TestLoader(unittest.TestCase):
                         'Unexpected build targets')
 
   def test_get_target_not_found(self):
-    config = TestLoader.__read_config()
+    config = TestLoader._read_config()
     with self.assertRaises(models.NotFound):
       config.get_target('non-extent-target')
 
   def test_get_run_command_with_config(self):
-    opts = self.__create_options()
+    opts = self._create_options()
 
     # The default config
-    config = TestLoader.__read_config()
+    config = TestLoader._read_config()
     actual_cmds = [cmd.cmd_line() for cmd in
                    config.get_run_commands('devchrome', opts)]
     expected_cmds = [['${Build_dir}/chrome',
@@ -163,8 +163,8 @@ class TestLoader(unittest.TestCase):
     self.assertListEqual(expected_cmd, actual_cmd)
 
   def test_get_run_command_with_upstream_target(self):
-    opts = self.__create_options()
-    config = TestLoader.__read_config()
+    opts = self._create_options()
+    config = TestLoader._read_config()
 
     actual_cmd = [cmd.cmd_line() for cmd in
                   config.get_run_commands('webkit_unit_tests-idb', opts)]
@@ -177,10 +177,10 @@ class TestLoader(unittest.TestCase):
     self.assertListEqual(expected_cmd, actual_cmd)
 
   def test_single_target_with_multiple_run_commands(self):
-    opts = self.__create_options()
+    opts = self._create_options()
 
     # The default config
-    config = TestLoader.__read_config()
+    config = TestLoader._read_config()
     actual_cmds = [cmd.cmd_line() for cmd in
                    config.get_run_commands('monochrome_apk', opts)]
     expected_cmds = [
@@ -191,8 +191,8 @@ class TestLoader(unittest.TestCase):
     self.assertListEqual(expected_cmds, actual_cmds)
 
   def test_build_only(self):
-    config = TestLoader.__read_config()
-    opts = self.__create_options()
+    config = TestLoader._read_config()
+    opts = self._create_options()
     actual_cmds = [cmd.cmd_line() for cmd in
                    config.get_run_commands('system_webview_uninstall', opts)]
     expected_cmds = [
@@ -201,8 +201,8 @@ class TestLoader(unittest.TestCase):
     self.assertListEqual(expected_cmds, actual_cmds)
 
   def test_run_only(self):
-    config = TestLoader.__read_config()
-    opts = self.__create_options()
+    config = TestLoader._read_config()
+    opts = self._create_options()
     run_commands = config.get_run_commands('adb-list-packages', opts)
     self.assertEqual(1, len(run_commands))
     self.assertEqual(True, run_commands[0].shell)
@@ -215,8 +215,8 @@ class TestLoader(unittest.TestCase):
 
 
   def test_env_vars(self):
-    config = TestLoader.__read_config()
-    opts = self.__create_options()
+    config = TestLoader._read_config()
+    opts = self._create_options()
     opts.buildopts.is_asan = True
     opts.buildopts.is_debug = False
     run_commands = config.get_run_commands('devchrome', opts)

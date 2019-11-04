@@ -11,7 +11,7 @@ class LoadError(Exception):
 
 class ConfigReader(object):
   @staticmethod
-  def __parse_target_ref(config, target_ref_data):
+  def _parse_target_ref(config, target_ref_data):
     """Parse a dependent target and return a TargetReference which will
     reference an existing (or newly created) Target.
 
@@ -39,7 +39,7 @@ class ConfigReader(object):
     return TargetReference(target, condition, build_only)
 
   @staticmethod
-  def __parse_run_command(config):
+  def _parse_run_command(config):
     run_command = RunCommand()
     if 'cmd' in config:
       if isinstance(config['cmd'], str):
@@ -74,7 +74,8 @@ class ConfigReader(object):
         run_command.env_var.values = e['value']
     return run_command
 
-  def __parse_run_commands(config, target_config_data):
+  @staticmethod
+  def _parse_run_commands(config, target_config_data):
     run_commands = dict()
 
     for command_name in target_config_data.keys():
@@ -84,25 +85,26 @@ class ConfigReader(object):
       if not config:
         raise LoadError('Cannot find config "%s".' % command_name)
       if isinstance(config, list):
-        run_commands[command_name] = [ConfigReader.__parse_run_command(c)
+        run_commands[command_name] = [ConfigReader._parse_run_command(c)
                                       for c in config]
       elif isinstance(config, dict):
-        run_commands[command_name] = [ConfigReader.__parse_run_command(config)]
+        run_commands[command_name] = [ConfigReader._parse_run_command(config)]
       else:
         raise Exception('Incorrect type')
 
     return run_commands
 
-  def __add_upstream_target(config, target, upstream_target_name):
+  @staticmethod
+  def _add_upstream_target(config, target, upstream_target_name):
     if target.name == upstream_target_name or \
       upstream_target_name == '${self}':
       target.reference_self = True
     else:
       target.add_upstream_target(
-          ConfigReader.__parse_target_ref(config, upstream_target_name))
+          ConfigReader._parse_target_ref(config, upstream_target_name))
 
   @staticmethod
-  def __replace_executable_name(run_command, executable_name):
+  def _replace_executable_name(run_command, executable_name):
     cmds = run_command.commands.copy()
     run_command.commands = [cmd.replace('${executable_name}', executable_name)
                             for cmd in cmds]
@@ -144,18 +146,18 @@ class ConfigReader(object):
               # upstream target when the template is expanded below.
               add_self_target = True
             else:
-              ConfigReader.__add_upstream_target(config, target, target_names)
+              ConfigReader._add_upstream_target(config, target, target_names)
           else:
             for up_target_name in target_names:
               if executable_names and up_target_name == '${self}':
                 # See comment above.
                 add_self_target = True
               else:
-                ConfigReader.__add_upstream_target(config, target,
-                                                   up_target_name)
+                ConfigReader._add_upstream_target(config, target,
+                                                  up_target_name)
 
         if 'configs' in target_params:
-          target.run_commands = ConfigReader.__parse_run_commands(
+          target.run_commands = ConfigReader._parse_run_commands(
               config, target_params['configs'])
           if not target.run_commands:
             raise Exception(
@@ -172,8 +174,8 @@ class ConfigReader(object):
             exe_target.explicit = False
             for _, run_commands in exe_target.run_commands.items():
               for run_command in run_commands:
-                ConfigReader.__replace_executable_name(run_command,
-                                                       exe_target.name)
+                ConfigReader._replace_executable_name(run_command,
+                                                      exe_target.name)
             config.add_target(exe_target)
 
     return config

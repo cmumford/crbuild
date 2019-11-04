@@ -64,12 +64,12 @@ class Adb(object):
     return device_info
 
   @staticmethod
-  def __path():
+  def _path():
     return 'adb'
 
   @staticmethod
   def os_release(device = None):
-    cmd = [Adb.__path(), 'shell', 'getprop', 'ro.build.version.release']
+    cmd = [Adb._path(), 'shell', 'getprop', 'ro.build.version.release']
     if device:
       cmd = [cmd[0]] + ['-s', device] + cmd[1:]
     for line in subprocess.check_output(cmd).splitlines():
@@ -78,7 +78,7 @@ class Adb(object):
 
   @staticmethod
   def api_level(device = None):
-    cmd = [Adb.__path(), 'shell', 'getprop', 'ro.build.version.sdk']
+    cmd = [Adb._path(), 'shell', 'getprop', 'ro.build.version.sdk']
     if device:
       cmd = [cmd[0]] + ['-s', device] + cmd[1:]
     for line in subprocess.check_output(cmd).splitlines():
@@ -87,7 +87,7 @@ class Adb(object):
 
   @staticmethod
   def cpu_abi(device = None):
-    cmd = [Adb.__path(), 'shell', 'getprop', 'ro.product.cpu.abi']
+    cmd = [Adb._path(), 'shell', 'getprop', 'ro.product.cpu.abi']
     if device:
       cmd = [cmd[0]] + ['-s', device] + cmd[1:]
     for line in subprocess.check_output(cmd).splitlines():
@@ -115,7 +115,7 @@ class Adb(object):
   @staticmethod
   def devices():
     """Return a map of device name to type."""
-    cmd = [Adb.__path(), 'devices']
+    cmd = [Adb._path(), 'devices']
     devices = {}
     for line in subprocess.check_output(cmd).splitlines():
       items = line.strip().split()
