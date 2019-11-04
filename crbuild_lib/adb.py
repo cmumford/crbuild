@@ -30,8 +30,8 @@ class DeviceInfo(object):
       16: ('Jelly Bean', '4.1.X'),
   }
 
-  def __init__(self, name, api_level, cpu_abi, installed_packages):
-    self.name = name
+  def __init__(self, serial, api_level, cpu_abi, installed_packages):
+    self.serial = serial
     self.api_level = api_level
     self.cpu_abi = cpu_abi
     self.installed_packages = installed_packages
@@ -56,11 +56,10 @@ class Adb(object):
   @staticmethod
   def get_device_info():
     device_info = {}
-    for device_name, _ in Adb.devices().items():
-      device_info[device_name] = DeviceInfo(device_name,
-                                            Adb.api_level(device_name),
-                                            Adb.cpu_abi(device_name),
-                                            Adb.get_installed_packages(device_name))
+    for device_serial, _ in Adb.devices().items():
+      device_info[device_serial] = DeviceInfo(
+          device_serial, Adb.api_level(device_serial),
+          Adb.cpu_abi(device_serial), Adb.get_installed_packages(device_serial))
     return device_info
 
   @staticmethod
@@ -114,7 +113,7 @@ class Adb(object):
 
   @staticmethod
   def devices():
-    """Return a map of device name to type."""
+    """Return a map of device serial to type."""
     cmd = [Adb._path(), 'devices']
     devices = {}
     for line in subprocess.check_output(cmd).splitlines():

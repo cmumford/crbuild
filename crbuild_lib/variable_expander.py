@@ -61,7 +61,7 @@ class VariableExpander(object):
     if variable_name == 'root_dir':
       return self.options.env.src_root_dir
     if variable_name == 'android_device':
-      return self.options.target_android_device
+      return self.options.target_android_device_serial
     if variable_name == 'layout_dir':
       return self.options.layout_dir
     if variable_name == 'HOME':

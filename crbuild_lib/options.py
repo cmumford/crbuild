@@ -58,7 +58,7 @@ class Options(object):
     self.profile_file = '/tmp/cpuprofile'
     self.run_targets = True
     self.gtest = None
-    self.target_android_device = None
+    self.target_android_device_serial = None
 
   # crbuild -d [<target1>..<targetn>] -- <run_arg1>, <run_argn>
   # argparse can't deal with multiple positional arguments. So before we parse
@@ -264,7 +264,7 @@ GN files."""
       # hard-code Android to false until crbug.com/996285 is fixed.
       self.buildopts.is_component_build = False
     if namespace.device:
-      self.target_android_device = namespace.device[0]
+      self.target_android_device_serial = namespace.device[0]
     if namespace.cpu:
       self.buildopts.target_cpu = namespace.cpu[0]
       if not self.buildopts.target_cpu in Options.valid_cpus:
@@ -335,29 +335,73 @@ GN files."""
     self.gtest = Options.fixup_google_test_filter_args(namespace.gtest)
     self.active_targets = namespace.target
     if self.buildopts.target_os == 'android':
-      if not self.target_android_device:
-        self.target_android_device = self._get_default_device()
-      if not self.buildopts.target_cpu:
-        if len(self.env.android_devices) == 0:
-          raise Exception('Must specify target cpu if no device attached.')
-        if len(self.env.android_devices) == 1:
-          self.buildopts.target_cpu = \
-              self.env.android_devices[self.target_android_device].cpu()
-        if len(self.env.android_devices) > 1:
-          raise Exception('Must specify target cpu if > 1 device attached.')
-      device_info = self.env.android_devices[self.target_android_device]
-      device_cpu = device_info.cpu()
-      if self.buildopts.target_cpu != device_cpu:
-        raise Exception(str.format(
-            "target CPU (\"{0}\") doesn't match default device (\"{1}\")",
-            self.buildopts.target_cpu, device_cpu))
-      elif not self.buildopts.target_cpu:
-        self.buildopts.target_cpu = 'x86'
+      self.set_android_defaults()
+      if self.target_android_device_serial:
+        # system_webview_package_name only works on N+.
+        # Also, this may change args.gn every build, but that's OK.
+        self.buildopts.system_webview_package_name = \
+            self._get_system_webview_package_name(self.target_android_device_serial)
 
-      # system_webview_package_name only works on N+.
-      # Also, this may change args.gn every build, but that's OK.
-      self.buildopts.system_webview_package_name = \
-          self._get_system_webview_package_name(self.target_android_device)
+  @staticmethod
+  def _build_cpu_matches_device(build_cpu, device_cpu):
+    assert build_cpu
+    if build_cpu == device_cpu:
+      return True
+    if build_cpu == 'arm' and device_cpu == 'armeabi':
+      return True
+    return False
+
+  def set_android_defaults(self):
+    """Determine the android device's cpu/serial values.
+
+    Generally the rule is:
+      1. If both are specified then validate and use.
+      2. If none are specified then:
+        a. If only one device then use it.
+        b. else error.
+    """
+    assert self.buildopts.target_os == 'android'
+    if self.buildopts.target_cpu and \
+        self.buildopts.target_cpu not in Options.valid_cpus:
+      raise Exception(str.format(
+          "target CPU (\"{0}\") doesn't match default device (\"{1}\")",
+          self.buildopts.target_cpu, device_cpu))
+
+    # User supplied args always override.
+    if self.target_android_device_serial and self.buildopts.target_cpu:
+      return
+
+    # If neither specified.
+    if not self.target_android_device_serial and not self.buildopts.target_cpu:
+      num_devices = len(self.env.android_devices)
+      if num_devices == 0:
+        self.buildopts.target_cpu = 'x86'
+        return
+      if num_devices == 1:
+        only_device_serial = next(iter(self.env.android_devices))
+        device_info = self.env.android_devices[only_device_serial]
+        self.buildopts.target_cpu = device_info.cpu_abi
+        self.target_android_device_serial = device_info.serial
+        return
+      raise Exception('There are ' + str(num_devices) + ' devices. Specify one with '
+                      '--cpu or --device options.')
+
+    if self.buildopts.target_cpu:
+      # Find the first device whose CPU type matches the target CPU. If there
+      # is more than one then error because this is ambiguous.
+      matching_device = None
+      for _, device_info in self.env.android_devices.items():
+        if Options._build_cpu_matches_device(self.buildopts.target_cpu,
+                                             device_info.cpu_abi):
+          if matching_device:
+            raise Exception(str.format('There are multiple devices with "%s"'
+                                       ' CPU. Specify with --device option.',
+                                       self.buildopts.target_cpu))
+          matching_device = device_info
+      if not matching_device:
+        raise Exception('No device with CPU matching "' + \
+                        self.buildopts.target_cpu + '"')
+      self.target_android_device_serial = matching_device.serial
 
   def _get_default_device(self):
     device_info = self.env.android_devices
