@@ -4,7 +4,6 @@ import os
 import re
 import subprocess
 
-from .env import Env
 from .command import Cmd
 
 class GN(object):

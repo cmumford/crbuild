@@ -6,10 +6,8 @@ import subprocess
 import sys
 
 from .command import Cmd
-from .env import Env
 from .gn import GN
-from .models import (Configuration, NotFound)
-from .options import Options
+from .models import NotFound
 from .stream_reader import StreamReader
 from .variable_expander import VariableExpander
 

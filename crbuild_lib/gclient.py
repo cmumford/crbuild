@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-import os
-
 class GClient(object):
   def __init__(self, gclient_path):
     self.contents = GClient.Read(gclient_path)

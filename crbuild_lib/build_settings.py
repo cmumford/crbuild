@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 
 import json
-import os
 import pickle
-from . import build_settings
 
 class ClassJSONEncoder(json.JSONEncoder):
   def default(self, obj):

@@ -4,12 +4,9 @@ import argparse
 import multiprocessing
 import os
 import platform
-import subprocess
 import sys
 
-from .adb import DeviceInfo
 from .build_settings import BuildSettings
-from .env import Env
 from .gclient import GClient
 from . import git
 
@@ -85,7 +82,7 @@ class Options(object):
     # prefix/suffixing tests with ':' shouldn't be necessary according to
     # https://github.com/google/googletest/blob/master/googletest/docs/V1_7_AdvancedGuide.md#running-a-subset-of-the-tests
     # but experimentation indicates otherwise.
-    if val == None:
+    if val is None:
       return None
     if val.strip() == '':
       return None

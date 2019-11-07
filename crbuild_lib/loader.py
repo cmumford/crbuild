@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import copy
-import sys
 import yaml
 
 from .models import (Configuration, EnvVar, RunCommand, Target, TargetReference)

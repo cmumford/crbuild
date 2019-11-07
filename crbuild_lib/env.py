@@ -25,7 +25,7 @@ class Env(object):
 
   @property
   def android_devices(self):
-    if self._devices == None:
+    if self._devices is None:
       self._devices = Adb.get_device_info()
     return self._devices
 

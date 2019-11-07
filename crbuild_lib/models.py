@@ -80,7 +80,6 @@ class TargetReference(object):
     if not self.condition:
       return True
     m = TargetReference.reg.match(self.condition)
-    assert(m)
     if m:
       os = m.group(1).strip()
       return os == options.buildopts.target_os
@@ -190,7 +189,7 @@ class Target(object):
     if self._depends_on_target(target_ref.target):
       raise CustomError(str.format('Target "{0}" already depends on "{1}"',
                                    self.name, target_ref.target.name))
-    if self.upstream_targets == None:
+    if self.upstream_targets is None:
       self.upstream_targets = []
     self.upstream_targets.append(target_ref)
 
