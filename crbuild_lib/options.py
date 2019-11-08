@@ -346,6 +346,8 @@ GN files."""
       return True
     if build_cpu == 'arm' and device_cpu == 'armeabi':
       return True
+    if build_cpu == 'arm64' and device_cpu == 'arm64-v8a':
+      return True
     return False
 
   def set_android_defaults(self):
@@ -387,7 +389,9 @@ GN files."""
       # Find the first device whose CPU type matches the target CPU. If there
       # is more than one then error because this is ambiguous.
       matching_device = None
+      cpus = []
       for _, device_info in self.env.android_devices.items():
+        cpus.append(device_info.cpu_abi)
         if Options._build_cpu_matches_device(self.buildopts.target_cpu,
                                              device_info.cpu_abi):
           if matching_device:
@@ -397,7 +401,7 @@ GN files."""
           matching_device = device_info
       if not matching_device:
         raise Exception('No device with CPU matching "' + \
-                        self.buildopts.target_cpu + '"')
+                        self.buildopts.target_cpu + '"' + str(cpus))
       self.target_android_device_serial = matching_device.serial
 
   def _get_default_device(self):
