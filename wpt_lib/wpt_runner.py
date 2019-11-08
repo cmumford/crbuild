@@ -5,11 +5,7 @@ import copy
 import json
 import os
 import subprocess
-import sys
 import tempfile
-import time
-
-from threading import Thread
 
 class TestInfo(object):
   def __init__(self, wpt_dir, wpt_app, webdriver_binary, product, package_name,

@@ -6,8 +6,6 @@ import os
 import sys
 import yaml
 
-from wpt_lib import (WptRunner)
-
 SRC_DIR='/usr/local/google/home/cmumford/work/ssd/chrome/src'
 sys.path.append(os.path.join(SRC_DIR, 'third_party', 'catapult', 'devil'))
 from devil.android import device_utils
