@@ -133,22 +133,19 @@ class Target(object):
 
     run_commands = []
     if self.upstream_targets:
+      # Start with the run commands of all upstream (targets on which this
+      # target depends) targets.
       for target_ref in self.upstream_targets:
         if target_ref.build_only:
           continue
         run_commands.extend(
             target_ref.target.get_run_commands(options))
 
-    if not run_commands and not self.run_commands:
-      # Not an error, not all targets are runnable.
-      return []
-
-    if options.gtest:
-      for run_command in run_commands:
-        run_command.args.append('--gtest_filter=%s' % options.gtest)
-
     if run_commands:
+      # Have upstream commands
       if not self.run_commands:
+        # If this target has no commands and all commands come from upstream
+        # then return now and don't append supplemental args.
         return run_commands
       try:
         # Add add the supplemental arguments to each run command.
@@ -171,7 +168,15 @@ class Target(object):
         # No error, just no supplemental args.
         pass
     else:
+      if not self.run_commands:
+        # If both upstream targets and this target have no run commands then
+        # return empty commands (not an error).
+        return []
       run_commands = self._get_run_commands(options)
+
+    if options.gtest:
+      for run_command in run_commands:
+        run_command.args.append('--gtest_filter=%s' % options.gtest)
 
     return run_commands
 

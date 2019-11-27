@@ -53,6 +53,19 @@ class TestLoader(unittest.TestCase):
 
     self.assertListEqual(expected_cmd, actual_cmd)
 
+  def test_gtest(self):
+    opts = self._create_options()
+    opts.gtest = options.Options.fixup_google_test_filter_args('TestClass.Test')
+    config = TestLoader._read_config()
+
+    actual_cmds = [cmd.cmd_line() for cmd in
+                   config.get_run_commands('base_unittests', opts)]
+    expected_cmds = [
+        ['${Build_dir}/base_unittests', '--brave-new-test-launcher',
+         '--test-launcher-jobs=${testjobs}',
+         "--gtest_filter=:TestClass.Test:"],
+    ]
+    self.assertListEqual(expected_cmds, actual_cmds)
 
   def test_get_target_list_expand(self):
     '''Get a target expanded from a target list.
@@ -212,7 +225,6 @@ class TestLoader(unittest.TestCase):
 
     target = config.get_target('adb-list-packages')
     self.assertEqual(True, target.run_only)
-
 
   def test_env_vars(self):
     config = TestLoader._read_config()
