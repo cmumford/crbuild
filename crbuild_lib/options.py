@@ -15,7 +15,8 @@ class InvalidOption(Exception):
 
 class Options(object):
 
-  valid_arm_cpus = ('arm', 'arm64', 'armeabi', 'armeabi-v7a', 'armv8-a')
+  valid_arm_cpus = ('arm', 'arm64', 'armeabi', 'armeabi-v7a', 'armv8-a',
+                    'arm64-v8a')
   valid_x86_cpus = ('x86', 'x64')
   valid_mips_cpus = ('mipsel', 'mips64el')
   valid_cpus = valid_arm_cpus + valid_x86_cpus + valid_mips_cpus
@@ -341,13 +342,14 @@ GN files."""
 
   @staticmethod
   def _build_cpu_matches_device(build_cpu, device_cpu):
+    # https://chromium.googlesource.com/chromium/src/+/HEAD/docs/android_build_instructions.md#figuring-out-target_cpu
     assert build_cpu
     if build_cpu == device_cpu:
       return True
-    if build_cpu == 'arm' and device_cpu == 'armeabi':
-      return True
-    if build_cpu == 'arm64' and device_cpu == 'arm64-v8a':
-      return True
+    if build_cpu == 'arm':
+      return device_cpu in ('armeabi', 'armeabi-v7a')
+    if build_cpu == 'arm64':
+      return device_cpu in ('arm64-v8a')
     return False
 
   def set_android_defaults(self):
