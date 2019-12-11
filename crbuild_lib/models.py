@@ -13,6 +13,9 @@ class NotFound(Exception):
 class NoDefaultRunCommand(Exception):
   pass
 
+class NoSupplementalArgs(Exception):
+  pass
+
 def remove_nulls(d):
   return {k: v for k, v in d.items() if v is not None}
 
@@ -151,8 +154,11 @@ class Target(object):
         # Add add the supplemental arguments to each run command.
         supplemental_run_commands = self._get_run_commands(options)
         assert(len(supplemental_run_commands) == 1)
-        # Can add supplemental args, but not a command.
-        assert(supplemental_run_commands[0].args)
+        if not supplemental_run_commands[0].args:
+          raise NoSupplementalArgs(
+              str.format('Supplemental args has no args for {0}. Mark the '
+                         'upstream target as build_only to add commands.',
+                         self.name))
         if supplemental_run_commands[0].commands:
           raise Exception(
               str.format('{0} Has supplemental commands, which should be ' \

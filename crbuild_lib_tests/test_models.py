@@ -203,6 +203,19 @@ class TestLoader(unittest.TestCase):
     ]
     self.assertListEqual(expected_cmds, actual_cmds)
 
+  def test_supplemental_build_only(self):
+    opts = self._create_options()
+
+    config = TestLoader._read_config()
+    actual_cmds = [cmd.cmd_line() for cmd in
+                   config.get_run_commands('system_monochrome_google_apk',
+                                           opts)]
+    expected_cmds = [
+        ['adb -s ${android_device} push ${Build_dir}/apks/Monochrome.apk '
+         '/system/app/Chrome/Chrome.apk'],
+    ]
+    self.assertListEqual(expected_cmds, actual_cmds)
+
   def test_build_only(self):
     config = TestLoader._read_config()
     opts = self._create_options()

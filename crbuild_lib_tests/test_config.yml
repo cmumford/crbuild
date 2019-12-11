@@ -319,6 +319,14 @@ monochrome_apk:
               - dumpsys
               - webviewupdate
 
+system_monochrome_google_apk:
+    targets:
+      - monochrome_apk:
+          build_only
+    configs:
+        default:
+            shell_cmd: adb -s ${android_device} push ${Build_dir}/apks/Monochrome.apk /system/app/Chrome/Chrome.apk
+
 system_webview_apk:
     configs:
         default:
