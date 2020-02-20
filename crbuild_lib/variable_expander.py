@@ -85,6 +85,10 @@ class VariableExpander(object):
       while m:
         val = self.get_value(m.group(1))
         if isinstance(val, str):
+          if self.options.buildopts.target_os == 'win':
+            # A single escape character is interpreted as escape sequences
+            # so escape them. May need to be done on all platforms.
+            val = val.replace('\\', r'\\\\')
           value = re.sub(VariableExpander.var_re, val, value, count=1)
         elif val is None:
           return None
