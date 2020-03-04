@@ -50,6 +50,7 @@ class Options(object):
                                    'LayoutTests')
     self.jobs = int(multiprocessing.cpu_count() * 120 / 100)
     self.test_jobs = self.jobs
+    self.debugger = 'gdb'
     self.profile = False
     # https://chromium.googlesource.com/chromium/src/+/master/docs/profiling.md
     self.heap_profiling = False

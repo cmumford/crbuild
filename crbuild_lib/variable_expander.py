@@ -52,6 +52,8 @@ class VariableExpander(object):
       return str(self.options.jobs)
     if variable_name == 'testjobs':
       return str(self.options.test_jobs)
+    if variable_name == 'debugger':
+      return str(self.options.debugger)
     if variable_name == 'out_dir':
       return self.options.out_dir
     if variable_name == 'Build_dir':
