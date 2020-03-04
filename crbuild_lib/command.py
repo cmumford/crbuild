@@ -18,12 +18,13 @@ class Cmd(object):
   @staticmethod
   def _item_to_string(item, add_quotes, quote_flags):
     assert(isinstance(item, str))
-    vals = item.split('=')
-    if len(vals) > 2:
-      raise Exception('Too many equals: ' + item)
-    if len(vals) == 2:
-      return '%s=%s' % (Cmd._item_to_string(vals[0], add_quotes, False),
-                        Cmd._item_to_string(vals[1], add_quotes, True))
+    equals_idx = item.find('=')
+    if equals_idx != -1:
+      lhs = item[:equals_idx]
+      rhs = item[equals_idx+1:]
+      return '%s=%s' % (Cmd._item_to_string(lhs, add_quotes, False),
+                        Cmd._item_to_string(rhs, add_quotes, True))
+
     if not add_quotes:
       return item
     if ' ' in item or '*' in item or (quote_flags and '--' in item):

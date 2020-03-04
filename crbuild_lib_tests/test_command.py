@@ -32,6 +32,11 @@ class TestCmd(unittest.TestCase):
                      command.Cmd.list_to_string(['foo', 'bar=with space'],
                                                 add_quotes=True))
 
+  def test_to_string_with_equals_quoted(self):
+    self.assertEqual('foo bar="with=equals"',
+                     command.Cmd.list_to_string(['foo', 'bar="with=equals"'],
+                                                add_quotes=True))
+
   def test_to_string_with_equals_hyphens(self):
     self.assertEqual('foo bar="--bar_flag"',
                      command.Cmd.list_to_string(['foo', 'bar=--bar_flag'],
