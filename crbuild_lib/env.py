@@ -18,7 +18,7 @@ class Env(object):
     self.gclient_path = gclient_path
     self.api_keys_path = api_keys_path
     self.num_cpus = multiprocessing.cpu_count()
-    self.build_platform = Env._get_build_platform()
+    self.build_platform = Env.get_build_platform()
     # None means the info hasn't been retrieved (using Adb). This allows tests
     # to set it, and if not set Adb will be used.
     self._devices = None
@@ -34,7 +34,7 @@ class Env(object):
     self._devices = info
 
   @staticmethod
-  def _get_build_platform():
+  def get_build_platform():
     '''Return the name of the platform on which the build is running.
 
     This uses the same names used by GN - not Python.
