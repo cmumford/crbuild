@@ -74,7 +74,6 @@ class GN(object):
     if build_settings.use_libfuzzer:
       args['use_libfuzzer'] = str(build_settings.use_libfuzzer).lower()
     if self._env.build_platform == 'win':
-      args['is_win_fastlink'] = str(build_settings.use_goma).lower()
       args['symbol_level'] = '2' if build_settings.is_official_build else '1'
     if build_settings.enable_profiling:
       args['enable_profiling'] = 'true'
