@@ -4,6 +4,7 @@ import argparse
 import multiprocessing
 import os
 import platform
+import subprocess
 import sys
 
 from .build_settings import BuildSettings
@@ -33,7 +34,7 @@ class Options(object):
     self.print_cmds = True
     self.noop = False
     self.regyp = False
-    self.buildopts.goma_dir = os.path.join(os.path.expanduser('~'), 'goma')
+    self.buildopts.goma_dir = Options._get_goma_dir()
     if self.buildopts.use_goma:
       self.buildopts.use_goma = self.can_use_goma()
     self.llvm_path = os.path.join(env.src_root_dir, 'third_party', 'llvm-build',
@@ -58,6 +59,12 @@ class Options(object):
     self.run_targets = True
     self.gtest = None
     self.target_android_device_serial = None
+
+  @staticmethod
+  def _get_goma_dir():
+    cmd = ['goma_ctl', 'goma_dir']
+    for line in subprocess.check_output(cmd, stderr=subprocess.DEVNULL).splitlines():
+      return line.decode('utf-8').strip()
 
   # crbuild -d [<target1>..<targetn>] -- <run_arg1>, <run_argn>
   # argparse can't deal with multiple positional arguments. So before we parse
