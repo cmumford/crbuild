@@ -34,8 +34,9 @@ class Options(object):
     self.print_cmds = True
     self.noop = False
     self.regyp = False
+    self.buildopts.goma_dir = Options._get_goma_dir()
     if self.buildopts.use_goma:
-      self.buildopts.use_goma = self._is_goma_running()
+      self.buildopts.use_goma = Options._is_goma_running()
     self.llvm_path = os.path.join(env.src_root_dir, 'third_party', 'llvm-build',
                                   'Release+Asserts', 'bin')
     if not os.path.exists(self.llvm_path):
@@ -58,6 +59,21 @@ class Options(object):
     self.run_targets = True
     self.gtest = None
     self.target_android_device_serial = None
+
+  @staticmethod
+  def _goma_ctl():
+    if os.name == 'nt':
+      return 'goma_ctl.bat'
+    else:
+      return 'goma_ctl'
+
+  @staticmethod
+  def _get_goma_dir():
+    # First line of stdout is the directory.
+    cmd = [Options._goma_ctl(), 'goma_dir']
+    for line in subprocess.check_output(cmd, stderr=subprocess.DEVNULL).splitlines():
+      return line.decode('utf-8').strip()
+    return None
 
   # crbuild -d [<target1>..<targetn>] -- <run_arg1>, <run_argn>
   # argparse can't deal with multiple positional arguments. So before we parse
@@ -473,12 +489,9 @@ GN files."""
       return desired_package_name
     return allowed_package_names[int(len(allowed_package_names) / 2)]
 
-  def _is_goma_running(self):
-    if self.buildopts.target_os == 'win':
-      # No idea why leaving off the *.bat causes FileNotFound exception.
-      cmd = ['goma_ctl.bat', 'status']
-    else:
-      cmd = ['goma_ctl', 'status']
+  @staticmethod
+  def _is_goma_running():
+    cmd = [Options._goma_ctl(), 'status']
     for line in subprocess.check_output(cmd, stderr=subprocess.DEVNULL).splitlines():
       line = line.decode('utf-8')
       if line.endswith('status: http://127.0.0.1:8088 ok'):
