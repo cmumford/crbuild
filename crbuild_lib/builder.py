@@ -130,21 +130,21 @@ class Builder(object):
     except NotFound as e:
       return False
 
+  @staticmethod
+  def _autoninja():
+    if os.name == 'nt':
+      return 'autoninja.bat'
+    else:
+      return 'autoninja'
+
   def _build(self, target_names):
     '''Build the specified GN target names.'''
     build_dir = self._build_dir()
-    cmd = ['ninja', '-C', build_dir, '-l', '40']
+    cmd = [Builder._autoninja(), '-C', build_dir]
     if self.options.noop:
       cmd.insert(1, '-n')
     if self.options.verbosity > 1:
       cmd.insert(1, '-v')
-    if self.options.buildopts.use_goma:
-      if self.options.buildopts.target_os == 'mac':
-        cmd[1:1] = ['-j', '100']
-      else:
-        cmd[1:1] = ['-j', '4096']
-    if self.options.keep_going:
-      cmd[1:1] = ['-k', '50000']
     if self.options.buildopts.is_asan:
       platform_dir = self._build_dir()
       os.environ['CHROME_DEVEL_SANDBOX'] = os.path.join(platform_dir,
