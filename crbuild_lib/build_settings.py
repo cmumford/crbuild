@@ -54,7 +54,7 @@ class BuildSettings(object):
     self._target_os = target_os
     if self._target_os == 'android':
       # https://sites.google.com/a/google.com/clank/engineering/sdk-build/working-with-monochrome
-      self.android_sdk_release = 'p'
+      self.android_sdk_release = 'r'
       self.use_signing_keys = True
       self.system_webview_package_name = 'com.google.android.webview'
       self.use_rtti = None
