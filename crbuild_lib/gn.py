@@ -60,7 +60,7 @@ class GN(object):
     args['is_clang'] = str(build_settings.use_clang).lower()
     args['is_component_build'] = str(build_settings.is_component_build).lower()
     args['is_debug'] = str(build_settings.is_debug).lower()
-    if build_settings.is_lsan:
+    if False and build_settings.is_lsan:
       args['is_lsan'] = str(build_settings.is_lsan).lower()
     if build_settings.is_msan:
       args['is_msan'] = str(build_settings.is_msan).lower()
@@ -74,7 +74,7 @@ class GN(object):
     if build_settings.use_libfuzzer:
       args['use_libfuzzer'] = str(build_settings.use_libfuzzer).lower()
     if self._env.build_platform == 'win':
-      args['symbol_level'] = '2' if build_settings.is_official_build else '1'
+      args['symbol_level'] = '2' if build_settings.is_official_build else '2'
     if build_settings.enable_profiling:
       args['enable_profiling'] = 'true'
     if build_settings.enable_cros_assistant:
@@ -87,7 +87,6 @@ class GN(object):
       args['symbol_level'] = '1'
       if not build_settings.is_tsan:
         args['enable_full_stack_frames_for_profiling'] = 'true'
-      args['strip_absolute_paths_from_debug_symbols'] = 'true'
     if (build_settings.use_libfuzzer or
         build_settings.is_asan or
         build_settings.is_tsan or
@@ -108,7 +107,6 @@ class GN(object):
       args['use_cfi_cast'] = 'true'
       args['use_cfi_diag'] = 'true'
       args['use_thin_lto'] = 'true'
-      # args['strip_absolute_paths_from_debug_symbols'] = 'true'
     # Setting android_sdk_release is probably unnecessary.
     if build_settings.android_sdk_release:
       args['android_sdk_release'] = \

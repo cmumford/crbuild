@@ -86,6 +86,8 @@ class Builder(object):
 
   # https://code.google.com/p/syzygy/wiki/SyzyASanBug
   def _instrument_SyzyASan(self, build_dir):
+    # Don't believe we use SyzyASAN anymore.
+    return
     syzygy_exes = os.path.join('third_party', 'syzygy', 'binaries', 'exe')
     instrument_exe = os.path.join(syzygy_exes, 'instrument.exe')
     input_chrome_dll = os.path.join(build_dir, 'chrome.dll')
