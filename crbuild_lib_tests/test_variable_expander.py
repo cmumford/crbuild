@@ -164,5 +164,14 @@ class TestVariableExpander(unittest.TestCase):
     self.assertListEqual(exp.expand_variables(['${run_args}', 'one', 'two']),
                          ['--pre', 'foo', 'one', 'two'])
 
+  def test_python(self):
+    opts = self._create_opts('linux')
+    exp = variable_expander.VariableExpander(opts)
+    self.assertListEqual(exp.expand_variables(['${python2}', 'foo', 'bar']),
+                         ['python', 'one', 'two'])
+
+    self.assertListEqual(exp.expand_variables(['${python3}', 'foo', 'bar']),
+                         ['python2', 'one', 'two'])
+
 if __name__ == '__main__':
     unittest.main()

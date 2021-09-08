@@ -36,6 +36,11 @@ class VariableExpander(object):
       '''Return the full path to the build dir - e.g. src/dir/out/Debug.'''
       return os.path.join(self.options.out_dir, self._get_base_build_dir())
 
+  def get_python3_path(self):
+    if self.options.buildopts.target_os == 'win':
+      return 'python'
+    return 'python3'
+
   def get_value(self, variable_name):
     '''Given a variable name return the variable value.
 
@@ -66,6 +71,10 @@ class VariableExpander(object):
       return self.options.target_android_device_serial
     if variable_name == 'layout_dir':
       return self.options.layout_dir
+    if variable_name == 'python2':
+      return 'python'
+    if variable_name == 'python3':
+      return self.get_python3_path()
     if variable_name == 'HOME':
       return os.path.expanduser('~')
     if variable_name == 'run_args':
