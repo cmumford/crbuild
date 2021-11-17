@@ -35,7 +35,11 @@ class StreamReader:
           return
         line = line.rstrip()
         if not isinstance(line, str):
-          line = line.decode('utf-8')
+          try:
+            line = line.decode('utf-8')
+          except:
+            out_stream.buffer.write(line)
+            continue
         if symbolize:
           line = ''.join(loop.process_line(line))
         print(line, file=out_stream)
