@@ -153,8 +153,6 @@ class Builder(object):
                                                         'chrome_sandbox')
     target_names_to_build = list(
         filter(lambda name: not self._is_run_only(name), target_names))
-    if not target_names_to_build:
-      return []
     cmd.extend(target_names_to_build)
     Cmd.print_ok(cmd, env_vars=None, add_quotes=True)
     try:
@@ -228,7 +226,6 @@ class Builder(object):
       self._gn.gen(self.options)
 
     exceptions = []
-    # TODO: Support default (none) target.
     build_targets = self.config.get_build_targets(
         self.options.active_targets, self.options)
     if not build_targets:
